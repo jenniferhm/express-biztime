@@ -19,7 +19,7 @@ router.get("/:code", async function (req, res, next) {
     let result = await db.query(
       `SELECT c.code, c.name, c.description, i.id
       FROM companies AS c
-      LEFT JOIN invoices AS i
+      INNER JOIN invoices AS i
       ON c.code = i.comp_code
       WHERE code=$1`, [req.params.code]);
 
@@ -29,8 +29,8 @@ router.get("/:code", async function (req, res, next) {
 
     let { code, name, description } = result.rows[0];
     let invoices = result.rows.map(r => r.id);
-    console.log(invoices);
-    return res.json({ company: code, name, description, invoices });
+
+    return res.json({ company: { code, name, description, invoices } });
   }
   catch (err) {
     return next(err);
@@ -81,10 +81,14 @@ router.put("/:code", async function (req, res, next) {
 
 router.delete("/:code", async function (req, res, next) {
   try {
-    await db.query(
+    let result = await db.query(
       `DELETE FROM companies WHERE code=$1`,
       [req.params.code]
     );
+
+    if (result.rows.length === 0) {
+      throw new ExpressError("That company does not exist!", 404);
+    }
 
     return res.json({ message: "Deleted" });
   }

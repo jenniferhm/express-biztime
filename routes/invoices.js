@@ -19,7 +19,7 @@ router.get("/:id", async function (req, res, next) {
     let result = await db.query(
       `SELECT i.id, i.amt, i.paid, i.add_date, i.paid_date, c.code, c.name, c.description
       FROM invoices AS i
-      LEFT JOIN companies AS c
+      INNER JOIN companies AS c
       ON i.comp_code = c.code
       WHERE id=$1`, [req.params.id]);
 
